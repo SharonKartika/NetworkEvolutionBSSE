@@ -5,6 +5,8 @@ using DataFrames, CSV, Statistics
 using Plots
 using JLD
 using GraphRecipes
+using Suppressor
+using Dates
 
 
 function mutate(network::Array{Int64,2}, score::Float64, nr::Int)
@@ -75,7 +77,7 @@ network2 = [1  -1  -1;-1   0  -1;-1  -1   1];
 function solveRacipe(network::Matrix{Int64}, i::Int64)
     "Takes a network, and a reference number as input. Returns the frequency matrix of states"
     interaction2topo(network, i)
-    run(`./RACIPE net$(i).topo -threads 40`)
+    output = @capture_out run(`./RACIPE net$(i).topo -threads 40`);
     dfr = CSV.read("net$(i)_solution.dat", DataFrame; header=0)
     n = (dfr |> names |> length) ÷ 2
     for i = 1:n 
@@ -134,13 +136,14 @@ function simulateRacipe(initNetwork::Matrix{Int64}, niter=10,nnodes = 3)
                          nnodes,
                          nnodes,
                          niter)#best network in each iteration 
-    
+    println("0%|$("-"^niter)|100%") #progress
+    print("  |")
     # step1: loading and initial evaluation 
     # initNetwork = rand((-1:1), (nnodes, nnodes));
     df = solveRacipe(initNetwork, 1)
     pscore = getPscore(df)
 
-    for i in 1:niter
+    timeTaken = @elapsed for i in 1:niter
         # step2: mutate
         nNetworks = mutateMulti(initNetwork, pscore, 6)
         push!(nNetworks, initNetwork)
@@ -157,8 +160,10 @@ function simulateRacipe(initNetwork::Matrix{Int64}, niter=10,nnodes = 3)
         # display(pscores[topScoreIndex]), display(initNetwork)
         x[i] = pscores[topScoreIndex]
         Mi[:,:,i] = copy(initNetwork)
-        println("$(i)%")
+        # println("$(i)%")
+        print("=")
     end
+    print("|\n$(timeTaken) seconds\n")
     return x, Mi
 end
 
@@ -217,16 +222,37 @@ end
 
 
 function multiRacipe(network)
+    # start with the network passed for all iterations
     niter = 100 # number of iterations of 
     nrepl = 20 # number of replicates
     scoresMatrix = Array{Float64, 2}(undef, nrepl, niter)
+    curdate = Dates.format(Dates.now(), "dd-mm-yy-HHMMSS")
     networkList = []
     for i in 1:nrepl
+        print("$(i)/$(nrepl)\n")
         x, Mi = simulateRacipe(network, niter, 3)
         scoresMatrix[i, :] = x 
         push!(networkList, Mi)
     end
-    save("multiRacipeResults.jld", "scoresMatrix", scoresMatrix, "networkList", networkList)
+    save("multiRacipeResults$(curdate).jld", "scoresMatrix", scoresMatrix, "networkList", networkList)
+    return scoresMatrix, networkList
+end
+
+function multiRacipe()
+    # start with random network for each iteration if no network is passed 
+    niter = 40 # number of iterations of 
+    nrepl = 15 # number of replicates
+    scoresMatrix = Array{Float64, 2}(undef, nrepl, niter)
+    curdate = Dates.format(Dates.now(), "dd-mm-yy-HHMMSS")
+    networkList = []
+    for i in 1:nrepl
+        print("$(i)/$(nrepl)\n")
+        network = rand(-1:1, 3, 3)
+        x, Mi = simulateRacipe(network, niter, 3)
+        scoresMatrix[i, :] = x 
+        push!(networkList, Mi)
+    end
+    save("multiRacipeResultsRandomInitial$(curdate).jld", "scoresMatrix", scoresMatrix, "networkList", networkList)
     return scoresMatrix, networkList
 end
 
@@ -235,8 +261,4 @@ function plotMultiRacipeConvergence(network)
     plot(X', ylims= [0,1], legend=:none)
 end
 
-function getNetworkScore(X, XM, nthrun, nthiter)
-    """Returns the network and the score for a particular index"""
-    i = nthrun; j = nthiter
-    XM[i][:, :, j], X[i, j]
-end
+
