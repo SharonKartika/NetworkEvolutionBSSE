@@ -257,8 +257,8 @@ function multiRacipe()
 end
 
 function plotMultiRacipeConvergence(network)
-    X, XM = multiRacipe(network)
-    plot(X', ylims=[0, 1], legend=:none)
+    #X, XM = multiRacipe(network)
+    #plot(X', ylims=[0, 1], legend=:none)
 end
 
 
