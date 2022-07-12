@@ -4,6 +4,7 @@ using StatsBase
 using DataFrames, CSV, Statistics
 using Plots
 using JLD
+using GraphRecipes
 
 
 function mutate(network::Array{Int64,2}, score::Float64, nr::Int)
