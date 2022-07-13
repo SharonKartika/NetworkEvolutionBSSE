@@ -1,6 +1,6 @@
 ### Evolving Gene Regulatory Networks
 
-We simulate gene regulatory networks using RACIPE use a genetic algorithm to select GRNs that produce desired outcomes. 
+We simulate gene regulatory networks using RACIPE and use a genetic algorithm to select GRNs that produce desired outcomes. 
 
 ### Instructions
 
