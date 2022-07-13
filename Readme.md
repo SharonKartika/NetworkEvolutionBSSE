@@ -1,19 +1,15 @@
-### Description
+### Evolving Gene Regulatory Networks
 
-Collection of functions to start from an initial network (given or random) and use mutation and selection to arrive at a network with monopositive states, as evaluated with RACIPE. 
+We simulate gene regulatory networks using RACIPE use a genetic algorithm to select GRNs that produce desired outcomes. 
 
 ### Instructions
 
-Clone the repository and change directory to `TopoFiles`. 
+Clone the repo. Change directory to `TopoFiles`.
 
-Run `julia --project`. 
+Run julia (`julia --project`).
 
-Run `include("scriptEvolution.jl")`. 
+Include the required program using `include("scriptEvolutionGeneral.jl")`
 
-Call function `simulateRacipe` with parameters in order:
+Call `simulateRacipe` passing as arguments the network and the number of iterations respectively. The network is represented by a square matrix of integers -1, 0, or 1. The function returns the best network and its p-score, obtained at each iteration. The p-score is the sum of relative frequencies of the desired outcomes.  		
 
-1. A matrix (of integers) representing the network.
-2. Number of iterations.
-3. Number of nodes. _(only 3 supported now)_
-
-Get a sequence of Matrices and their corresponding scores (which is the sum of relative frequencies of desired states). 
+ 

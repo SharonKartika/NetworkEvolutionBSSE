@@ -167,60 +167,6 @@ function simulateRacipe(initNetwork::Matrix{Int64}, niter=10, nnodes=3)
     return x, Mi
 end
 
-
-#=begin # testing pscores
-    df = DataFrame(states=["'001'", "'011'", "'010'", "'100'"],
-                frequency=[1.,0. ,2., 3.])
-    df = DataFrame(states=["'001'", "'011'"],
-            frequency=[4.2,2.])
-
-    getPscore(df)
-end=#
-
-
-#=begin #test boolean toggleTriad
-    x=Float64[]
-    for i in 1:300
-    df = dfFreq(
-            asyncUpdateStates(toggleTriad, 1000, 1000),
-            [:fin, :flag])
-        pscore = getPscore(df)
-        push!(x, pscore)
-    end
-    plot(x, ylims=[0., 0.007])
-end=#
-
-#old interaction2topo. Relies on manual actions
-#=function interaction2topo(tNet::AbstractMatrix, fname::Int)
-    xi, yi, vi = findnz(sparse(tNet))
-    lets = 'A':'Z'
-    nmap = Dict(1=>1, -1=>2)
-    io = open("net$(fname).topo", "w") 
-    write(io,"Source\tTarget\tType\n")
-    for i in eachindex(vi)
-        # println("$(lets[xi[i]])\t$(lets[yi[i]])\t$(nmap[vi[i]])")  
-        write(io, "$(lets[xi[i]])\t$(lets[yi[i]])\t$(nmap[vi[i]])\n")
-    end
-    close(io)
-end=#
-
-#= #an ensemble of trajectories  
-# will take 50*20*7*2.5/60 = 291 minutes
-X = Any[]
-M = Any[]
-for i in 1:20
-    x, m = simulateRacipe(50, 3)
-    push!(X, x)
-    push!(M, m)
-end
-=#
-
-# start with toggleTriad and simulate 
-
-# x, Mi = simulateRacipe(toggleTriad, 5, 3)
-
-
-
 function multiRacipe(network)
     # start with the network passed for all iterations
     niter = 100 # number of iterations of 
