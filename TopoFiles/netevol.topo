@@ -1,5 +1,5 @@
 Source	Target	Type
-C	A	1
+B	B	1
 C	B	2
-B	C	1
-C	C	2
+B	C	2
+C	C	1

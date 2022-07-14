@@ -144,7 +144,7 @@ and number of mutants at each step `nmutants`,
 with `mutateFraction` fraction of elements modified."""
 function multiRacipe(network, niter=10, nrepl=4, nmutants=7, mutateFraction=0.4)
     scoresMatrix = Matrix{Float64}(undef, nrepl, niter)
-    networkMatrix = Matrix{Matrix{Float64}}(undef, nrepl, niter)
+    networkMatrix = Matrix{Matrix{Int64}}(undef, nrepl, niter)
     date = Dates.format(Dates.now(), "dd-mm-yy-HHMMSS")
     for i in 1:nrepl
         print("$(i)/$(nrepl)\n") #progress
@@ -152,7 +152,7 @@ function multiRacipe(network, niter=10, nrepl=4, nmutants=7, mutateFraction=0.4)
         scoresMatrix[i, :] = x
         networkMatrix[i, :] = Mi
     end
-    save("multiRacipeResults$(date)", "scoresMatrix", scoresMatrix,
+    save("multiRacipeResults$(date).jld", "scoresMatrix", scoresMatrix,
          "networkMatrix", networkMatrix)
     return scoresMatrix, networkMatrix
 end
