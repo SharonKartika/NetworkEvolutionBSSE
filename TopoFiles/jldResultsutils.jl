@@ -1,5 +1,5 @@
-d = load("multiRacipeResults.jld")
-X, XM = d["scoresMatrix"], d["networkList"]
+d = load("multiRacipeResults14-07-22-193136.jld")
+X, XM = d["scoresMatrix"], d["networkMatrix"]
 
 function getNetworkScore(nthrun, nthiter, X, XM)
     i = nthrun
@@ -45,4 +45,15 @@ end
 function matrixSubplots(selectedNetworks)
     l = @layout grid(5, 8)
     plot([plotMatrixHeatmap(selectedNetworks[i]) for i in 1:length(selectedNetworks)]..., layout=l)
+end
+
+function plotConvergence(X)
+    plot(X', ylims=(0,1),
+    label="",
+    color=:blue,
+    lw=1, alpha=0.7,
+    xlabel="iteration number",
+    ylabel="score")
+    xmean = mean(X, dims=1)
+    plot!(xmean', label="mean score", color=:red, lw=2)
 end

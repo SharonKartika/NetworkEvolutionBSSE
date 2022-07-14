@@ -5,3 +5,5 @@ using   CairoMakie,
 
 include("scriptEvolutionGeneral.jl")
 
+g = wheel_graph(10)
+
