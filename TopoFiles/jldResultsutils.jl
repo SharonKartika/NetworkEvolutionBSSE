@@ -1,3 +1,5 @@
+using CairoMakie
+
 d = load("multiRacipeResults14-07-22-193136.jld")
 X, XM = d["scoresMatrix"], d["networkMatrix"]
 
@@ -37,9 +39,6 @@ function findNetworksAboveThresh(thresh, X, XM)
     selectedNetworks
 end
 
-
-
-
 """Takes in the scoresmatrix `X` 
 and plots the convergence over the iterations."""
 function plotConvergence(X)
@@ -51,4 +50,13 @@ function plotConvergence(X)
         ylabel="score")
     xmean = mean(X, dims=1)
     plot!(xmean', label="mean score", color=:red, lw=2)
+end
+
+"""Takes in a matrix and returns its heatmap""" 
+function plotNetworkHeatmap(network)
+    ns = size(network,1)
+    xs = 1:ns 
+    ys = 1:ns
+    CairoMakie.heatmap(xs, ys, reverse(network,dims=1))
+    
 end
