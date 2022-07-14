@@ -1,16 +1,20 @@
 d = load("multiRacipeResults14-07-22-193136.jld")
 X, XM = d["scoresMatrix"], d["networkMatrix"]
 
+"""Returns the score and the matrix of the network
+ in `nthiter` of `nthrun`."""
 function getNetworkScore(nthrun, nthiter, X, XM)
-    i = nthrun
-    j = nthiter
-    XM[i][:, :, j], X[i, j]
+    X[nthrun, nthiter], XM[nthrun, nthiter]
 end
 
+"""Returns the score and the matrix of the network
+ in `nthiter` of `nthrun`. Takes in a tuple of indices"""
 function getNetworkScore(indice, X, XM)
     getNetworkScore(indice[1], indice[2], X, XM)
 end
 
+"""Returns a vector of networks which have scores
+ above the threshold `thresh`"""
 function findNetworksAboveThresh(thresh, X, XM)
     noverthresh = sum(X .> thresh)
     indices = zeros(Int, noverthresh, 2)
@@ -23,9 +27,9 @@ function findNetworksAboveThresh(thresh, X, XM)
         end
     end
 
-    selectedNetworks = []
+    selectedNetworks = Vector{Matrix{Int}}(undef, 0)
     for i in 1:noverthresh
-        p = getNetworkScore(indices[i, :], X, XM)[1]
+        p = getNetworkScore(indices[i, :], X, XM)[2]
         if !(p in selectedNetworks)
             push!(selectedNetworks, p)
         end
@@ -33,27 +37,18 @@ function findNetworksAboveThresh(thresh, X, XM)
     selectedNetworks
 end
 
-function plotMatrixHeatmap(network)
-    heatmap(reverse(network, dims=1),
-        colorbar=:none,
-        aspect_ratio=1,
-        showaxis=false,
-        ticks=false,
-        color=[:turquoise3, :wheat1, :tomato2])
-end
 
-function matrixSubplots(selectedNetworks)
-    l = @layout grid(5, 8)
-    plot([plotMatrixHeatmap(selectedNetworks[i]) for i in 1:length(selectedNetworks)]..., layout=l)
-end
 
+
+"""Takes in the scoresmatrix `X` 
+and plots the convergence over the iterations."""
 function plotConvergence(X)
-    plot(X', ylims=(0,1),
-    label="",
-    color=:blue,
-    lw=1, alpha=0.7,
-    xlabel="iteration number",
-    ylabel="score")
+    plot(X', ylims=(0, 1),
+        label="",
+        color=:blue,
+        lw=1, alpha=0.7,
+        xlabel="iteration number",
+        ylabel="score")
     xmean = mean(X, dims=1)
     plot!(xmean', label="mean score", color=:red, lw=2)
 end
