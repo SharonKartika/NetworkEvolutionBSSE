@@ -79,7 +79,7 @@ function solveRacipe(network)
     interaction2topo(network)
 
     #run RACIPE; store RACIPE output in output
-    output = @capture_out run(`./RACIPE netevol.topo -threads $(Threads.nthreads())`)
+    output = @capture_out run(`./RACIPE netevol.topo -threads $(Threads.nthreads()÷4)`)
     
     #read the results; ignore first 3 columns
     dfr = CSV.read("netevol_solution.dat", DataFrame; header=0)[:, 4:end]
@@ -99,6 +99,7 @@ end
 
 """Runs the evolutionary algorithm for `niter` iterations, 
 starting with `network` and `nmutants` mutants at each iteration.
+`mutateFraction` elements are mutated from each network in each iteration.
 Returns p-score as well as the best network at each iteration.    """
 function simulateRacipe(network, niter=10, nmutants=7, mutateFraction=0.4)
     #step0: storing scores and matrices 
