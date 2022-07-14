@@ -79,7 +79,7 @@ function solveRacipe(network)
     interaction2topo(network)
 
     #run RACIPE; store RACIPE output in output
-    output = @capture_out run(`./RACIPE netevol.topo -threads $(Threads.nthreads()÷4)`)
+    output = @capture_out run(`./RACIPE netevol.topo -threads $(Threads.nthreads())`)
     
     #read the results; ignore first 3 columns
     dfr = CSV.read("netevol_solution.dat", DataFrame; header=0)[:, 4:end]
