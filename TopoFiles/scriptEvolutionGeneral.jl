@@ -25,10 +25,13 @@ function mutate(network, nr)
 end
 
 """Takes a network, returns `n` mutated networks,
-including the unmodified original network"""
-function mutateMulti(network, n)
+including the unmodified original network.
+`mutateFraction` fraction of the elements are mutated"""
+function mutateMulti(network, n, mutateFraction=0.4)
+    #number of elements to be changed
+    mutateNumber = round(Int, mutateFraction * length(network))
     nNets = [copy(network) for i in 1:n]
-    mutate.(nNets[2:end], 5) 
+    mutate.(nNets[2:end], mutateNumber) 
     return nNets
 end
 
@@ -94,9 +97,10 @@ function solveRacipe(network)
     dfr[:, "fin"]
 end
 
-"""Runs the evolutionary algorithm for `niter` iterations
+"""Runs the evolutionary algorithm for `niter` iterations, 
+starting with `network` and `nmutants` mutants at each iteration.
 Returns p-score as well as the best network at each iteration.    """
-function simulateRacipe(network, niter=10)
+function simulateRacipe(network, niter=10, nmutants=7, mutateFraction=0.4)
     #step0: storing scores and matrices 
     nnodes = size(network, 1)
     x = zeros(niter) #score of best network
@@ -112,7 +116,7 @@ function simulateRacipe(network, niter=10)
 
     timeTaken = @elapsed for i in 1:niter
         # step2: mutate
-        nNetworks = mutateMulti(network, 6)
+        nNetworks = mutateMulti(network, nmutants, mutateFraction)
         # step3: evaluate 
         # find states of all networks 
         nResults = [solveRacipe(net) for net in nNetworks]
@@ -134,3 +138,20 @@ function simulateRacipe(network, niter=10)
     return x, Mi
 end
 
+"""Runs `simulateRacipe` `nrepl` times, with number of iterations `niter`
+and number of mutants at each step `nmutants`,
+with `mutateFraction` fraction of elements modified."""
+function multiRacipe(network, niter=10, nrepl=4, nmutants=7, mutateFraction=0.4)
+    scoresMatrix = Matrix{Float64}(undef, nrepl, niter)
+    networkMatrix = Matrix{Matrix{Float64}}(undef, nrepl, niter)
+    date = Dates.format(Dates.now(), "dd-mm-yy-HHMMSS")
+    for i in 1:nrepl
+        print("$(i)/$(nrepl)\n") #progress
+        x, Mi = simulateRacipe(network, niter, nmutants, mutateFraction)
+        scoresMatrix[i, :] = x
+        networkMatrix[i, :] = Mi
+    end
+    save("multiRacipeResults$(date)", "scoresMatrix", scoresMatrix,
+         "networkMatrix", networkMatrix)
+    return scoresMatrix, networkMatrix
+end
