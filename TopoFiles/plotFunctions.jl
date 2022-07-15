@@ -27,7 +27,7 @@ function plotNetwork(network)
         arrow_size=20,
         arrow_shift=0.9,
         edge_color=edgeColors,
-        nlabels=string.(intToLetter.(1:2)))
+        nlabels=string.(intToLetter.(1:size(network, 1))))
 
     hidedecorations!(ax); hidespines!(ax); ax.aspect = DataAspect()
     return f
