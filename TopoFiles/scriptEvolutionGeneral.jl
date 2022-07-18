@@ -106,6 +106,52 @@ end
 
 """Runs the evolutionary algorithm for `niter` iterations, 
 starting with `network` and `nmutants` mutants at each iteration.
+Number of elements to be mutated is chosen based on the pscore.
+Returns p-score as well as the best network at each iteration.    """
+function simulateRacipe(network, niter=10, nmutants=7)
+    #step0: storing scores and matrices 
+    nnodes = size(network, 1)
+    x = zeros(niter) #score of best network
+    # best network in each iteration
+    Mi = Vector{Matrix{Int64}}(undef, niter)
+
+    #display progress
+    println("0%|$("-"^niter)|100%") 
+    print("  |")
+
+    # step1: initial evaluation 
+    pscore = solveRacipe(network) |> calcFreq |> getPscore
+
+    timeTaken = @elapsed for i in 1:niter
+        # step2: mutate
+        mutatefrac = 1-pscore
+        nNetworks = mutateMulti(network,
+                    nmutants,
+                    mutatefrac)
+        # step3: evaluate 
+        # find states of all networks 
+        nResults = [solveRacipe(net) for net in nNetworks]
+        nDfFreqs = calcFreq.(nResults)
+        pscores = getPscore.(nDfFreqs) # find pscores of all networks
+
+        # display((nNetworks .=> pscores))
+
+        # step4: select and store
+        topScoreIndex = argmax(pscores) # find index of highest scoring network 
+        network = nNetworks[topScoreIndex] # select the highest scoring network
+
+        pscore = pscores[topScoreIndex]
+        x[i] = pscore
+        Mi[i] = copy(network)
+
+        print("=")
+    end # step5: go to step2 if i < niter
+    print("|    $(timeTaken) seconds\n")
+    return x, Mi
+end
+
+"""Runs the evolutionary algorithm for `niter` iterations, 
+starting with `network` and `nmutants` mutants at each iteration.
 `mutateFraction` elements are mutated from each network in each iteration.
 Returns p-score as well as the best network at each iteration.    """
 function simulateRacipe(network, niter=10, nmutants=7, mutateFraction=0.4)
@@ -120,14 +166,14 @@ function simulateRacipe(network, niter=10, nmutants=7, mutateFraction=0.4)
     print("  |")
 
     # step1: initial evaluation 
-    #pscore = solveRacipe(network) |> calcFreq |> getPscore
+    # pscore = solveRacipe(network) |> calcFreq |> getPscore
 
     timeTaken = @elapsed for i in 1:niter
         # step2: mutate
         nNetworks = mutateMulti(network, nmutants, mutateFraction)
         # step3: evaluate 
         # find states of all networks 
-        nResults = [solveRacipe(net+I) for net in nNetworks]
+        nResults = [solveRacipe(net) for net in nNetworks]
         nDfFreqs = calcFreq.(nResults)
         pscores = getPscore.(nDfFreqs) # find pscores of all networks
 
@@ -164,3 +210,20 @@ function multiRacipe(network, niter=10, nrepl=4, nmutants=7, mutateFraction=0.4)
     return scoresMatrix, networkMatrix
 end
 
+"""Runs `simulateRacipe` `nrepl` times, with number of iterations `niter`
+and number of mutants at each step `nmutants`, with fraction of elements 
+to be modified chosen randomly."""
+function multiRacipe(network, niter=10, nrepl=4, nmutants=7)
+    scoresMatrix = Matrix{Float64}(undef, nrepl, niter)
+    networkMatrix = Matrix{Matrix{Int64}}(undef, nrepl, niter)
+    for i in 1:nrepl
+        print("$(i)/$(nrepl)\n") #progress
+        x, Mi = simulateRacipe(network, niter, nmutants)
+        scoresMatrix[i, :] = x
+        networkMatrix[i, :] = Mi
+    end
+    date = Dates.format(Dates.now(), "dd-mm-yy-HHMMSS")
+    save("multiRacipeResults$(date).jld", "scoresMatrix", scoresMatrix,
+         "networkMatrix", networkMatrix)
+    return scoresMatrix, networkMatrix
+end
