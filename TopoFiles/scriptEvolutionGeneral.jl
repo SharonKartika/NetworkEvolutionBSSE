@@ -127,7 +127,7 @@ function simulateRacipe(network, niter=10, nmutants=7, mutateFraction=0.4)
         nNetworks = mutateMulti(network, nmutants, mutateFraction)
         # step3: evaluate 
         # find states of all networks 
-        nResults = [solveRacipe(net) for net in nNetworks]
+        nResults = [solveRacipe(net+I) for net in nNetworks]
         nDfFreqs = calcFreq.(nResults)
         pscores = getPscore.(nDfFreqs) # find pscores of all networks
 
@@ -164,4 +164,3 @@ function multiRacipe(network, niter=10, nrepl=4, nmutants=7, mutateFraction=0.4)
     return scoresMatrix, networkMatrix
 end
 
-"booohoohaha"
