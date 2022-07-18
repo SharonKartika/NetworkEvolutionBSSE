@@ -7,7 +7,6 @@ using StatsBase,
     DataFrames,
     CSV,
     Statistics,
-    Plots,
     JLD,
     GraphRecipes,
     Suppressor, 
@@ -18,6 +17,13 @@ using StatsBase,
 toggleTriad = [0 -1 -1; -1 0 -1; -1 -1 0]
 toggleSquare = (-1)*(ones(Int, 4,4)- I)
 toggleSquareSelf = toggleSquare + I
+
+"""Maps `ri` from interval `(x1,x2)` to inerval `(y1,y2)`"""
+function map(ri, x1, x2, y1, y2)
+    runit = (ri - x1) / (x2 - x1)
+    rf = runit * (y2-y1) + y1
+    return rf  
+end
 
 """Takes a network, returns a mutant with `nr` elements replaced"""
 function mutate(network, nr)
