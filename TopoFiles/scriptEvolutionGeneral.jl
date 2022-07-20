@@ -31,6 +31,7 @@ function mutate(network, nr)
     return network
 end
 
+
 """Takes a network, returns `n` mutated networks,
 including the unmodified original network.
 `mutateFraction` fraction of the elements are mutated"""
@@ -52,6 +53,11 @@ which are monopositive"""
 function getMonopositiveStrings(n)
     [("0"^(i - 1)) * "1" * ("0"^(n - i)) for i in 1:n]
 end
+
+function getPscorePbyS(dfFreq)
+    
+end
+
 
 """Takes in the df of frequencies of occurrence (`dfFreq`), 
 and calculates the score of the network"""
