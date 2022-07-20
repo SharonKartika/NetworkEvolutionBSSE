@@ -64,6 +64,7 @@ function barplotDictFreq(dfreq)
     for i in values(dfreq)
         push!(y, i)
     end
+
     fig = barplot(y, axis=(;xticks=(1:length(x), x)))
     ylims!(0,1)
     fig
