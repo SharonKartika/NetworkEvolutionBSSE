@@ -25,8 +25,6 @@ function map(ri, x1, x2, y1, y2)
     return rf
 end
 
-#Temporary function
-
 """Takes a network, returns a mutant with `nr` elements replaced"""
 function mutate(network, nr)
     network[sample(1:length(network), nr, replace=false)] = rand(-1:1, nr)
