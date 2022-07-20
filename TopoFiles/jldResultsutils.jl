@@ -1,4 +1,4 @@
-d = load("multiRacipeResults15-07-22-015055.jld")
+d = load("multiRacipeResults18-07-22-135115.jld")
 X, XM = d["scoresMatrix"], d["networkMatrix"]
 
 """Returns the score and the matrix of the network
@@ -37,4 +37,34 @@ function findNetworksAboveThresh(thresh, X, XM)
     selectedNetworks
 end
 
+"""Solves a network, 
+finds the frequency of each monoposotive state"""
+function getDictFreq(network)
+    sols = solveRacipe(network)
+    # D = countmap(sols)
+    D = proportionmap(sols)
+    S = getMonopositiveStrings(size(network, 1))
+    Dnew = Dict()
+    for i in S
+        if i in keys(D)
+            Dnew[i] = D[i]
+        end
+    end
+    Dnew
+end
 
+"""Barplots the relative frequency of monopositive states.
+Takes the output of getDictFreq"""
+function barplotDictFreq(dfreq)
+    x = String[]
+    y = Float64[]
+    for i in keys(dfreq)
+        push!(x, i)
+    end
+    for i in values(dfreq)
+        push!(y, i)
+    end
+    fig = barplot(y, axis=(;xticks=(1:length(x), x)))
+    ylims!(0,1)
+    fig
+end

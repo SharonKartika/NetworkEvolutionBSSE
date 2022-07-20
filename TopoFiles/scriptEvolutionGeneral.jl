@@ -9,21 +9,23 @@ using StatsBase,
     Statistics,
     JLD,
     GraphRecipes,
-    Suppressor, 
-    Dates, 
+    Suppressor,
+    Dates,
     SparseArrays,
     LinearAlgebra
 
 toggleTriad = [0 -1 -1; -1 0 -1; -1 -1 0]
-toggleSquare = (-1)*(ones(Int, 4,4)- I)
+toggleSquare = (-1) * (ones(Int, 4, 4) - I)
 toggleSquareSelf = toggleSquare + I
 
 """Maps `ri` from interval `(x1,x2)` to inerval `(y1,y2)`"""
 function map(ri, x1, x2, y1, y2)
     runit = (ri - x1) / (x2 - x1)
-    rf = runit * (y2-y1) + y1
-    return rf  
+    rf = runit * (y2 - y1) + y1
+    return rf
 end
+
+#Temporary function
 
 """Takes a network, returns a mutant with `nr` elements replaced"""
 function mutate(network, nr)
@@ -38,7 +40,7 @@ function mutateMulti(network, n, mutateFraction=0.4)
     #number of elements to be changed
     mutateNumber = round(Int, mutateFraction * length(network))
     nNets = [copy(network) for i in 1:n]
-    mutate.(nNets[2:end], mutateNumber) 
+    mutate.(nNets[2:end], mutateNumber)
     return nNets
 end
 
@@ -50,13 +52,13 @@ end
 """Returns a list of strings containing `1`s and `0`s,
 which are monopositive"""
 function getMonopositiveStrings(n)
-    [("0"^(i-1))*"1"*("0"^(n-i)) for i in 1:n]
+    [("0"^(i - 1)) * "1" * ("0"^(n - i)) for i in 1:n]
 end
 
 """Takes in the df of frequencies of occurrence (`dfFreq`), 
 and calculates the score of the network"""
 function getPscore(dfFreq)
-    nn = length(dfFreq[1,1]) #number of nodes in network
+    nn = length(dfFreq[1, 1]) #number of nodes in network
     reqStates = getMonopositiveStrings(nn) # list of required states
     indexOfReq = ainb(dfFreq.Sequence, reqStates)
     return sum(dfFreq[indexOfReq, "RelFreq"])
@@ -87,18 +89,18 @@ function solveRacipe(network)
 
     #run RACIPE; store RACIPE output in output
     output = @capture_out run(`./RACIPE netevol.topo -threads $(Threads.nthreads())`)
-    
+
     #read the results; ignore first 3 columns
     dfr = CSV.read("netevol_solution.dat", DataFrame; header=0)[:, 4:end]
-    n = dfr |> names |> length 
-    
+    n = dfr |> names |> length
+
     rename!(dfr, ["Column$(i)" for i in 1:n])
     for i in 1:n
         meani = mean(dfr[:, i])
         #if value greater than mean of the column, set to 1; else 0
         dfr[:, "Column$(n+i)"] = string.(Int.(dfr[:, i] .> meani))
     end
-    
+
     #join the state of individual nodes and store as string
     dfr[:, "fin"] = .*([dfr[:, i] for i in n+1:2n]...)
     dfr[:, "fin"]
@@ -116,7 +118,7 @@ function simulateRacipe(network, niter=10, nmutants=7)
     Mi = Vector{Matrix{Int64}}(undef, niter)
 
     #display progress
-    println("0%|$("-"^niter)|100%") 
+    println("0%|$("-"^niter)|100%")
     print("  |")
 
     # step1: initial evaluation 
@@ -124,10 +126,10 @@ function simulateRacipe(network, niter=10, nmutants=7)
 
     timeTaken = @elapsed for i in 1:niter
         # step2: mutate
-        mutatefrac = 1-pscore
+        mutatefrac = 1 - pscore
         nNetworks = mutateMulti(network,
-                    nmutants,
-                    mutatefrac)
+            nmutants,
+            mutatefrac)
         # step3: evaluate 
         # find states of all networks 
         nResults = [solveRacipe(net) for net in nNetworks]
@@ -162,7 +164,7 @@ function simulateRacipe(network, niter=10, nmutants=7, mutateFraction=0.4)
     Mi = Vector{Matrix{Int64}}(undef, niter)
 
     #display progress
-    println("0%|$("-"^niter)|100%") 
+    println("0%|$("-"^niter)|100%")
     print("  |")
 
     # step1: initial evaluation 
@@ -206,7 +208,7 @@ function multiRacipe(network, niter=10, nrepl=4, nmutants=7, mutateFraction=0.4)
     end
     date = Dates.format(Dates.now(), "dd-mm-yy-HHMMSS")
     save("multiRacipeResults$(date).jld", "scoresMatrix", scoresMatrix,
-         "networkMatrix", networkMatrix)
+        "networkMatrix", networkMatrix)
     return scoresMatrix, networkMatrix
 end
 
@@ -224,6 +226,6 @@ function multiRacipe(network, niter=10, nrepl=4, nmutants=7)
     end
     date = Dates.format(Dates.now(), "dd-mm-yy-HHMMSS")
     save("multiRacipeResults$(date).jld", "scoresMatrix", scoresMatrix,
-         "networkMatrix", networkMatrix)
+        "networkMatrix", networkMatrix)
     return scoresMatrix, networkMatrix
 end
