@@ -54,22 +54,28 @@ function getMonopositiveStrings(n)
     [("0"^(i - 1)) * "1" * ("0"^(n - i)) for i in 1:n]
 end
 
-function getPscorePbyS(dfFreq)
+"""Takes in the df of frequencies of occurrence (`dfFreq`), 
+and calculates the score of the network, depending on the string passed.
+Availabe: `product`, `sum`, `productbysum`, `sumbyproduct`"""
+function getPscore(dfFreq, scoretype::String)
     nn = length(dfFreq[1, 1]) #number of nodes in network
     reqStates = getMonopositiveStrings(nn) # list of required states
     indexOfReq = ainb(dfFreq.Sequence, reqStates)
     reqFreqs = dfFreq[indexOfReq, "RelFreq"]
-    return prod(reqFreqs) / sum(reqFreqs) 
+    if (scoretype == "product")
+        return prod(reqFreqs)
+    elseif (scoretype == "sum")
+        return sum(reqFreqs)
+    elseif (scoretype == "productbysum")
+        return prod(reqFreqs) / sum(reqFreqs)
+    elseif (scoretype == "sumbyproduct")
+        return sum(reqFreqs) / prod(reqFreqs)
+    else
+        error("The string passed does not match any known scoring function")
+    end
 end
 
-"""Takes in the df of frequencies of occurrence (`dfFreq`), 
-and calculates the score of the network"""
-function getPscore(dfFreq)
-    nn = length(dfFreq[1, 1]) #number of nodes in network
-    reqStates = getMonopositiveStrings(nn) # list of required states
-    indexOfReq = ainb(dfFreq.Sequence, reqStates)
-    return sum(dfFreq[indexOfReq, "RelFreq"])
-end
+
 
 """Takes in the result of simulation
 (a list of strings of outputs), and finds the relative
@@ -116,7 +122,8 @@ end
 """Runs the evolutionary algorithm for `niter` iterations, 
 starting with `network` and `nmutants` mutants at each iteration.
 Number of elements to be mutated is chosen based on the pscore.
-Returns p-score as well as the best network at each iteration.    """
+Returns p-score as well as the best network at each iteration.
+Only `sum` cost function is allowed."""
 function simulateRacipe(network, niter=10, nmutants=7)
     #step0: storing scores and matrices 
     nnodes = size(network, 1)
@@ -129,7 +136,7 @@ function simulateRacipe(network, niter=10, nmutants=7)
     print("  |")
 
     # step1: initial evaluation 
-    pscore = solveRacipe(network) |> calcFreq |> getPscore
+    pscore = getPscore(calcFreq(solveRacipe(network)), "sum")
 
     timeTaken = @elapsed for i in 1:niter
         # step2: mutate
@@ -141,7 +148,7 @@ function simulateRacipe(network, niter=10, nmutants=7)
         # find states of all networks 
         nResults = [solveRacipe(net) for net in nNetworks]
         nDfFreqs = calcFreq.(nResults)
-        pscores = getPscore.(nDfFreqs) # find pscores of all networks
+        pscores = getPscore.(nDfFreqs, "sum") # find pscores of all networks
 
         # display((nNetworks .=> pscores))
 
@@ -162,8 +169,14 @@ end
 """Runs the evolutionary algorithm for `niter` iterations, 
 starting with `network` and `nmutants` mutants at each iteration.
 `mutateFraction` elements are mutated from each network in each iteration.
-Returns p-score as well as the best network at each iteration.    """
-function simulateRacipe(network, niter=10, nmutants=7, mutateFraction=0.4)
+Returns p-score as well as the best network at each iteration. 
+Also takes in the scoring method (default: `sum`)."""
+function simulateRacipe(network,
+                        niter=10,
+                        nmutants=7,
+                        mutateFraction=0.4,
+                        scoremethod="sum")
+
     #step0: storing scores and matrices 
     nnodes = size(network, 1)
     x = zeros(niter) #score of best network
@@ -175,7 +188,6 @@ function simulateRacipe(network, niter=10, nmutants=7, mutateFraction=0.4)
     print("  |")
 
     # step1: initial evaluation 
-    # pscore = solveRacipe(network) |> calcFreq |> getPscore
 
     timeTaken = @elapsed for i in 1:niter
         # step2: mutate
@@ -184,7 +196,7 @@ function simulateRacipe(network, niter=10, nmutants=7, mutateFraction=0.4)
         # find states of all networks 
         nResults = [solveRacipe(net) for net in nNetworks]
         nDfFreqs = calcFreq.(nResults)
-        pscores = getPscorePbyS.(nDfFreqs) # find pscores of all networks
+        pscores = getPscore.(nDfFreqs, scoremethod) # find pscores of all networks
 
         # display((nNetworks .=> pscores))
 
@@ -204,12 +216,22 @@ end
 """Runs `simulateRacipe` `nrepl` times, with number of iterations `niter`
 and number of mutants at each step `nmutants`,
 with `mutateFraction` fraction of elements modified."""
-function multiRacipe(network, niter=10, nrepl=4, nmutants=7, mutateFraction=0.4)
+function multiRacipe(network,
+                    niter=10,
+                    nrepl=4,
+                    nmutants=7,
+                    mutateFraction=0.4,
+                    scoremethod="sum")
+
     scoresMatrix = Matrix{Float64}(undef, nrepl, niter)
     networkMatrix = Matrix{Matrix{Int64}}(undef, nrepl, niter)
     for i in 1:nrepl
         print("$(i)/$(nrepl)\n") #progress
-        x, Mi = simulateRacipe(network, niter, nmutants, mutateFraction)
+        x, Mi = simulateRacipe(network,
+            niter,
+            nmutants,
+            mutateFraction,
+            scoremethod)
         scoresMatrix[i, :] = x
         networkMatrix[i, :] = Mi
     end

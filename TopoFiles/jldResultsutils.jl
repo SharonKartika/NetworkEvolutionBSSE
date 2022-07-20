@@ -1,4 +1,4 @@
-d = load("multiRacipeResults18-07-22-135115.jld")
+d = load("multiRacipeResults20-07-22-121032.jld")
 X, XM = d["scoresMatrix"], d["networkMatrix"]
 
 """Returns the score and the matrix of the network
