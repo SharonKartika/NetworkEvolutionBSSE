@@ -129,7 +129,7 @@ function simulateRacipe(network, niter=10, nmutants=7)
     print("  |")
 
     # step1: initial evaluation 
-    pscore = solveRacipe(network) |> calcFreq |> getPscorePbyS
+    pscore = solveRacipe(network) |> calcFreq |> getPscore
 
     timeTaken = @elapsed for i in 1:niter
         # step2: mutate
@@ -141,7 +141,7 @@ function simulateRacipe(network, niter=10, nmutants=7)
         # find states of all networks 
         nResults = [solveRacipe(net) for net in nNetworks]
         nDfFreqs = calcFreq.(nResults)
-        pscores = getPscorePbyS.(nDfFreqs) # find pscores of all networks
+        pscores = getPscore.(nDfFreqs) # find pscores of all networks
 
         # display((nNetworks .=> pscores))
 
@@ -184,7 +184,7 @@ function simulateRacipe(network, niter=10, nmutants=7, mutateFraction=0.4)
         # find states of all networks 
         nResults = [solveRacipe(net) for net in nNetworks]
         nDfFreqs = calcFreq.(nResults)
-        pscores = getPscore.(nDfFreqs) # find pscores of all networks
+        pscores = getPscorePbyS.(nDfFreqs) # find pscores of all networks
 
         # display((nNetworks .=> pscores))
 
