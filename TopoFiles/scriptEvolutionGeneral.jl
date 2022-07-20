@@ -55,9 +55,12 @@ function getMonopositiveStrings(n)
 end
 
 function getPscorePbyS(dfFreq)
-    
+    nn = length(dfFreq[1, 1]) #number of nodes in network
+    reqStates = getMonopositiveStrings(nn) # list of required states
+    indexOfReq = ainb(dfFreq.Sequence, reqStates)
+    reqFreqs = dfFreq[indexOfReq, "RelFreq"]
+    return prod(reqFreqs) / sum(reqFreqs) 
 end
-
 
 """Takes in the df of frequencies of occurrence (`dfFreq`), 
 and calculates the score of the network"""
@@ -126,7 +129,7 @@ function simulateRacipe(network, niter=10, nmutants=7)
     print("  |")
 
     # step1: initial evaluation 
-    pscore = solveRacipe(network) |> calcFreq |> getPscore
+    pscore = solveRacipe(network) |> calcFreq |> getPscorePbyS
 
     timeTaken = @elapsed for i in 1:niter
         # step2: mutate
@@ -138,7 +141,7 @@ function simulateRacipe(network, niter=10, nmutants=7)
         # find states of all networks 
         nResults = [solveRacipe(net) for net in nNetworks]
         nDfFreqs = calcFreq.(nResults)
-        pscores = getPscore.(nDfFreqs) # find pscores of all networks
+        pscores = getPscorePbyS.(nDfFreqs) # find pscores of all networks
 
         # display((nNetworks .=> pscores))
 
