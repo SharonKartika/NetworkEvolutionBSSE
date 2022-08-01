@@ -28,6 +28,7 @@ end
 """Takes a network, returns a mutant with `nr` elements replaced"""
 function mutate(network, nr)
     network[sample(1:length(network), nr, replace=false)] = rand(-1:1, nr)
+    print("he")
     return network
 end
 
@@ -83,6 +84,14 @@ frequencies of each unique state."""
 function calcFreq(dfr)
     D = proportionmap(dfr)
     dfFreq = DataFrame(Sequence=collect(keys(D)), RelFreq=collect(values(D)))
+    S = getMonopositiveStrings(length(dfr[1,1]))
+    dfFreq
+    for i in S
+        if !(i in dfFreq.Sequence)
+            push!(dfFreq, (i, 0.0))
+        end
+    end 
+    dfFreq
 end
 
 """Takes an interaction matrix, converts it to topo format,
