@@ -1,2 +1,6 @@
 Boolean.jl/
 JupyterNotebooksCopy/
+*.jld
+netevol*
+
+
