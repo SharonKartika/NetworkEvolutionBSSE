@@ -28,8 +28,15 @@ end
 """Takes a network, returns a mutant with `nr` elements replaced"""
 function mutate(network, nr)
     network[sample(1:length(network), nr, replace=false)] = rand(-1:1, nr)
-    print("he")
-    return network
+    # ensure that all the nodes are connected.  
+    # see if the network has empty crosses. If yes, add random element in the row.
+    n = size(network, 2)
+    nzeros = zeros(Int, n)
+    for i in 1:n
+        if (network[i, :] == nzeros) && (network[:, i] == nzeros)
+            network[i, rand(1:n)] = rand([-1, 1])
+        end
+    end
 end
 
 
