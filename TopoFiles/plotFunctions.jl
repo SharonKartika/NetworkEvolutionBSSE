@@ -122,8 +122,7 @@ function plotNetworkHeatmapMulti(networks, I, J)
                 textsize=15,
                 color=[revnet[i, j] < 0 ? (:white) : (:black) for i in 1:nsize for j in 1:nsize],
                 align=(:center, :center))
-            # ax.title = repr(round(xscoremean[count],digits=3))
-
+            # ax.title = repr(round(X[  count, end],digits=7))
             count += 1
         end
     end
@@ -134,11 +133,11 @@ end
 
 """Takes in the scoresmatrix `X` 
 and plots the convergence over the iterations."""
-function plotConvergence(X)
+function plotConvergence(X, yulim=1)
     fig, ax, sp = series(X,
         solid_color=(:blue, 0.4))
     # labels=[:nothing for i in 1:size(X,1)])
-    ylims!(ax, (0, 1))
+    ylims!(ax, (0, yulim))
     xlims!(ax, (0, size(X, 2)))
     lp = lines!(ax, vec(mean(X, dims=1)), color=:red, linewidth=3, label="mean score")
     ax.xlabel = "Iterations"
