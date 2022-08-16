@@ -92,7 +92,7 @@ function plotNetworkHeatmap(network)
     revnet = reverse(network, dims=1)'
     nsize = size(network, 2)
     heatmap!(ax, revnet)
-    text!(ax,
+    text!(ax, 
         [string(revnet[i, j]) for i in 1:nsize for j in 1:nsize],
         position=[(x, y) for x in 1:nsize for y in 1:nsize],
         textsize=30,
@@ -122,7 +122,7 @@ function plotNetworkHeatmapMulti(networks, I, J)
                 textsize=15,
                 color=[revnet[i, j] < 0 ? (:white) : (:black) for i in 1:nsize for j in 1:nsize],
                 align=(:center, :center))
-            # ax.title = repr(round(X[  count, end],digits=7))
+            ax.title = repr(round(X[  count, end],digits=7))
             count += 1
         end
     end
@@ -133,11 +133,11 @@ end
 
 """Takes in the scoresmatrix `X` 
 and plots the convergence over the iterations."""
-function plotConvergence(X, yulim=1)
+function plotConvergence(X, ylims=(0,1))
     fig, ax, sp = series(X,
         solid_color=(:blue, 0.4))
     # labels=[:nothing for i in 1:size(X,1)])
-    ylims!(ax, (0, yulim))
+    ylims!(ax, ylims)
     xlims!(ax, (0, size(X, 2)))
     lp = lines!(ax, vec(mean(X, dims=1)), color=:red, linewidth=3, label="mean score")
     ax.xlabel = "Iterations"
@@ -147,5 +147,18 @@ function plotConvergence(X, yulim=1)
         [sp, lp],
         ["score for each run", "mean score"])
     fig
+end
+
+function compareNetworks(ME)
+    Mm, Ms = vec(mean(ME)), vec(std(ME))
+    lowerrs = Mm- Ms
+    higherrs =  Mm + Ms
+    xs = 1:length(Mm)
+    f = Figure()
+    ax = Axis(f[1,1])
+    rangebars!(ax, xs, lowerrs, higherrs,
+            whiskerwidth=10) 
+    scatter!(ax, xs, Mm, markersize = 5, color = :red)
+    f
 end
 

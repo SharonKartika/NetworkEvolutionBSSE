@@ -1,4 +1,4 @@
-d = load("multiRacipeResultsProductbysum04-08-22-041612.jld")
+d = load("multiRacipeResults.jld")
 X, XM = d["scoresMatrix"], d["networkMatrix"]
 
 """Returns the score and the matrix of the network
@@ -69,3 +69,8 @@ function barplotDictFreq(dfreq)
     ylims!(0,1)
     fig
 end
+
+
+# ME = XM[:,end] #matrices obtained at the end of the run
+# mean(ME)
+# var(ME)

@@ -78,6 +78,15 @@ function getPscore(dfFreq, scoretype::String)
         return prod(reqFreqs) / sum(reqFreqs)
     elseif (scoretype == "sumbyproduct")
         return sum(reqFreqs) / prod(reqFreqs)
+    elseif (scoretype == "msd")
+        function ismonopositive(s::String)
+            return s in reqStates
+        end
+        Dmono = filter(:Sequence => ismonopositive, dfFreq).RelFreq
+        DNmono = filter(:Sequence => x -> !ismonopositive(x), dfFreq).RelFreq
+        f = 1/nn 
+        score = sum((Dmono .- f) .^ 2) + sum(DNmono .^ 2)
+        return -sqrt(score)
     else
         error("The string passed does not match any known scoring function")
     end
@@ -274,3 +283,4 @@ function multiRacipe(network, niter=10, nrepl=4, nmutants=7)
         "networkMatrix", networkMatrix)
     return scoresMatrix, networkMatrix
 end
+
