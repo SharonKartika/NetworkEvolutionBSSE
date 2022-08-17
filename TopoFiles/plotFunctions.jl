@@ -47,7 +47,7 @@ function plotNetworkMulti(networks, I, J; labelnodes=true)
     intToLetter(i) = (Dict(1:26 .=> 'A':'Z'))[i]
     mapcolors(i) = ((i == 2) ? (:red) : (:green))
 
-    fig = Figure()
+    fig = Figure(resolution=(1600, 1200))
     count = 1
     axs = []
     for i in 1:I
