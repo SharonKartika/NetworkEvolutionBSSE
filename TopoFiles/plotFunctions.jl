@@ -90,10 +90,12 @@ function plotNetworkHeatmap(network)
     fig = Figure()
     ax = Axis(fig[1, 1], aspect=DataAspect())
     revnet = reverse(network, dims=1)'
+    roundmat(x) = round(x, digits=2)
     nsize = size(network, 2)
-    heatmap!(ax, revnet)
+    heatmap!(ax, revnet, colormap=:plasma)
     text!(ax, 
-        [string(revnet[i, j]) for i in 1:nsize for j in 1:nsize],
+        # [string(revnet[i, j]) for i in 1:nsize for j in 1:nsize],
+        [string(roundmat.(revnet[i, j])) for i in 1:nsize for j in 1:nsize],
         position=[(x, y) for x in 1:nsize for y in 1:nsize],
         textsize=30,
         color=[revnet[i, j] < 0 ? (:white) : (:black) for i in 1:nsize for j in 1:nsize],

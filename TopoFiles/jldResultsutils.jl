@@ -1,4 +1,4 @@
-d = load("multiRacipeResults.jld")
+d = load("multiRacipeResults13-08-22-210515-MSD-3node-TT.jld")
 X, XM = d["scoresMatrix"], d["networkMatrix"]
 
 """Returns the score and the matrix of the network
@@ -42,7 +42,7 @@ finds the frequency of each monoposotive state"""
 function getDictFreq(network)
     sols = solveRacipe(network)
     # D = countmap(sols)
-    D = proportionmap(sols)
+    D = proportionmap(sols) .= 0
     S = getMonopositiveStrings(size(network, 1))
     Dnew = Dict()
     for i in S
@@ -65,12 +65,43 @@ function barplotDictFreq(dfreq)
         push!(y, i)
     end
 
-    fig = barplot(y, axis=(;xticks=(1:length(x), x)))
-    ylims!(0,1)
+    fig = barplot(y, axis=(; xticks=(1:length(x), x)))
+    ylims!(0, 1)
     fig
 end
 
 
-# ME = XM[:,end] #matrices obtained at the end of the run
-# mean(ME)
-# var(ME)
+function getMonoFreq(network)
+    """returns the frequencies of monopositive strings
+     for a network"""
+    D = calcFreq(solveRacipe(network))
+    nn = length(D[1, 1])
+    S = getMonopositiveStrings(nn)
+    Rfs = filter(:Sequence => x -> x in S, D)
+    sort!(Rfs)
+    return Rfs.RelFreq
+end
+
+function plotMonoPositiveMulti(D)
+    "Takes the output of `getMonoFreq`
+     applied on a set of networks, and plots
+     the frequencies of monopositive states,
+     as a heatmap"
+    # D = getMonoFreq.(networks)
+    Dm = reduce(hcat, D) #conv. vector{vector} to Matrix
+    nn = size(Dm,1)
+    xx = size(Dm, 2)
+    fig = Figure()
+    ax = Axis(fig[1,1],
+         aspect=DataAspect(),
+         xticks=(1:xx, (x->"net $x").(1:xx)),
+         yticks=(1:nn,getMonopositiveStrings(nn))
+         )
+    x = size(Dm, 2)
+    hm= heatmap!(ax, Dm',
+         colorrange=(0,1/nn))
+    Colorbar(fig[2,:], hm, vertical=false)
+    fig
+end
+
+
