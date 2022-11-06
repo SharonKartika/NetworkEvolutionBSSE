@@ -1,4 +1,4 @@
-d = load("multiRacipeResults13-08-22-210515-MSD-3node-TT.jld")
+d = load("multiRacipeResults15-07-22-015055Random4by4.jld")
 X, XM = d["scoresMatrix"], d["networkMatrix"]
 
 """Returns the score and the matrix of the network
@@ -82,7 +82,11 @@ function getMonoFreq(network)
     return Rfs.RelFreq
 end
 
-function plotMonoPositiveMulti(D)
+function plotMonoPositiveMulti(D,
+     xtext::String="net",
+     plottitle::String="""Heatmap of \
+     relative frequencies for different networks\n  """)
+    
     "Takes the output of `getMonoFreq`
      applied on a set of networks, and plots
      the frequencies of monopositive states,
@@ -94,13 +98,14 @@ function plotMonoPositiveMulti(D)
     fig = Figure()
     ax = Axis(fig[1,1],
          aspect=DataAspect(),
-         xticks=(1:xx, (x->"net $x").(1:xx)),
+         xticks=(1:xx, (x->"$(xtext) $x").(1:xx)),
          yticks=(1:nn,getMonopositiveStrings(nn))
          )
     x = size(Dm, 2)
     hm= heatmap!(ax, Dm',
          colorrange=(0,1/nn))
     Colorbar(fig[2,:], hm, vertical=false)
+    ax.title=plottitle
     fig
 end
 

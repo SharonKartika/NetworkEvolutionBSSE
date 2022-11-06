@@ -12,7 +12,8 @@ using StatsBase,
     Suppressor,
     Dates,
     SparseArrays,
-    LinearAlgebra
+    LinearAlgebra,
+    StatsBase
 
 toggleTriad = [0 -1 -1; -1 0 -1; -1 -1 0]
 toggleSquare = (-1) * (ones(Int, 4, 4) - I)
@@ -64,7 +65,7 @@ end
 
 """Takes in the df of frequencies of occurrence (`dfFreq`), 
 and calculates the score of the network, depending on the string passed.
-Availabe: `product`, `sum`, `productbysum`, `sumbyproduct`"""
+Availabe: `product`, `sum`, `productbysum`, `sumbyproduct`, `nrmsd`"""
 function getPscore(dfFreq, scoretype::String)
     nn = length(dfFreq[1, 1]) #number of nodes in network
     reqStates = getMonopositiveStrings(nn) # list of required states
@@ -78,7 +79,7 @@ function getPscore(dfFreq, scoretype::String)
         return prod(reqFreqs) / sum(reqFreqs)
     elseif (scoretype == "sumbyproduct")
         return sum(reqFreqs) / prod(reqFreqs)
-    elseif (scoretype == "msd")
+    elseif (scoretype == "nrmsd")
         function ismonopositive(s::String)
             return s in reqStates
         end
@@ -101,7 +102,8 @@ function calcFreq(dfr)
     D = proportionmap(dfr)
     dfFreq = DataFrame(Sequence=collect(keys(D)), RelFreq=collect(values(D)))
     S = getMonopositiveStrings(length(dfr[1,1]))
-    dfFreq
+    #=for when a monopositive state is not present 
+    in the output of an evaluation=#
     for i in S
         if !(i in dfFreq.Sequence)
             push!(dfFreq, (i, 0.0))
@@ -119,6 +121,22 @@ function interaction2topo(tNet::AbstractMatrix)
     df = DataFrame(Source=lets[xi], Target=lets[yi], Type=nmap.(vi))
     CSV.write("netevol.topo", df, delim='\t')
     df
+end
+
+function topo2interaction(df::DataFrame)
+    dropmissing!(df)
+    Nodes = sort(unique(vcat(df.Source, df.Target)))
+    n_nodes = length(Nodes)
+    update_matrix = zeros(Int64, n_nodes, n_nodes)
+    for i in 1:size(df, 1)
+        if df[i, 3] == 2
+            df[i,3] = -1
+        end
+        j = findfirst(x->x==df[i,1], Nodes)
+        k = findfirst(x->x==df[i,2], Nodes)
+        update_matrix[j,k] = Int64(df[i,3])
+    end
+    return update_matrix
 end
 
 """Runs RACIPE on the network. Returns a vector of final states."""
