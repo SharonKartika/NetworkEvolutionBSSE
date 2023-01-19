@@ -124,7 +124,7 @@ function plotNetworkHeatmapMulti(networks, I, J)
                 textsize=15,
                 color=[revnet[i, j] < 0 ? (:white) : (:black) for i in 1:nsize for j in 1:nsize],
                 align=(:center, :center))
-            ax.title = repr(round(X[  count, end],digits=7))
+            # ax.title = repr(round(X[  count, end],digits=7))
             count += 1
         end
     end

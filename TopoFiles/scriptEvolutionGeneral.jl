@@ -66,7 +66,7 @@ end
 """Takes in the df of frequencies of occurrence (`dfFreq`), 
 and calculates the score of the network, depending on the string passed.
 Availabe: `product`, `sum`, `productbysum`, `sumbyproduct`, `nrmsd`"""
-function getPscore(dfFreq, scoretype::String)
+function getPscore(dfFreq, scoretype::String="sum")
     nn = length(dfFreq[1, 1]) #number of nodes in network
     reqStates = getMonopositiveStrings(nn) # list of required states
     indexOfReq = ainb(dfFreq.Sequence, reqStates)
